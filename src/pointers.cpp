@@ -34,6 +34,20 @@ private:
     };
     Pointer<T> *ptr = new Pointer<T>(nullptr);
 
+    void deleteRef()
+    {
+        if (this->ptr != nullptr)
+        {
+            this->ptr->refs--;
+            if (this->ptr->refs == 0)
+            {
+                std::cout << "Deleting pointer!" << std::endl;
+                delete ptr;
+                ptr = nullptr;
+            }
+        }
+    }
+
 public:
     SmartPointer(T *ptr)
     {
@@ -41,30 +55,23 @@ public:
     }
     SmartPointer(SmartPointer &other)
     {
-        delete ptr;
         this->ptr = other.ptr;
         this->ptr->refs++;
     }
-    SmartPointer operator=(SmartPointer &other)
+    SmartPointer operator=(SmartPointer other)
     {
         if (this->ptr == other.ptr)
         {
             return *this;
         }
-        delete ptr;
+        deleteRef();
         this->ptr = other.ptr;
         this->ptr->refs++;
         return *this;
     }
     ~SmartPointer()
     {
-        this->ptr->refs--;
-        if (this->ptr->refs == 0)
-        {
-            std::cout << "Deleting pointer!" << std::endl;
-            delete ptr;
-            ptr = nullptr;
-        }
+        deleteRef();
     }
     T *operator->()
     {
@@ -84,12 +91,18 @@ void doSomethingWithMyPointer(SmartPointer<int> pointer)
 int main(int argc, char *argv[])
 {
     std::cout << "You should see a message below that the pointer was deleted:" << std::endl;
-    int *rawPointer = new int;
-    SmartPointer<int> ptr(rawPointer);
+    SmartPointer<int> ptr = new int;
     *ptr = 50;
     std::cout << *ptr << std::endl;
-    ptr = ptr;
     doSomethingWithMyPointer(ptr);
     std::cout << *ptr << std::endl;
+    ptr = new int;
+    for (int i = 0; i < argc; i++)
+    {
+        std::cout << "A new pointer:" << std::endl;
+        SmartPointer<int> anotherPtr = new int;
+        std::cout << "pointer about to go out of scope" << std::endl;
+    }
+    std::cout << "Exiting main function:" << std::endl;
     return 0;
 }
